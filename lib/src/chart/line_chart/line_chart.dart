@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fl_chart/src/chart/base/axis_chart/axis_chart_scaffold_widget.dart';
 import 'package:fl_chart/src/chart/line_chart/line_chart_renderer.dart';
+import 'package:fl_chart/src/chart/line_chart/rope_chart_renderer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -52,18 +53,30 @@ class _LineChartState extends AnimatedWidgetBaseState<LineChart> {
     final showingData = _getData();
 
     return AxisChartScaffoldWidget(
-      chart: LineChartLeaf(
-        data: _withTouchedIndicators(_lineChartDataTween!.evaluate(animation)),
-        targetData: _withTouchedIndicators(showingData),
-        key: widget.chartRendererKey,
+      chart: Builder(
+        builder: (context) {
+          switch (widget.data.linePaintStyle) {
+            case LinePaintStyle.line:
+              return LineChartLeaf(
+                data: _withTouchedIndicators(_lineChartDataTween!.evaluate(animation)),
+                targetData: _withTouchedIndicators(showingData),
+                key: widget.chartRendererKey,
+              );
+            case LinePaintStyle.rope:
+              return RopeChartLeaf(
+                data: _withTouchedIndicators(_lineChartDataTween!.evaluate(animation)),
+                targetData: _withTouchedIndicators(showingData),
+                key: widget.chartRendererKey,
+              );
+          }
+        },
       ),
       data: showingData,
     );
   }
 
   LineChartData _withTouchedIndicators(LineChartData lineChartData) {
-    if (!lineChartData.lineTouchData.enabled ||
-        !lineChartData.lineTouchData.handleBuiltInTouches) {
+    if (!lineChartData.lineTouchData.enabled || !lineChartData.lineTouchData.handleBuiltInTouches) {
       return lineChartData;
     }
 
@@ -83,8 +96,7 @@ class _LineChartState extends AnimatedWidgetBaseState<LineChart> {
     if (lineTouchData.enabled && lineTouchData.handleBuiltInTouches) {
       _providedTouchCallback = lineTouchData.touchCallback;
       return widget.data.copyWith(
-        lineTouchData: widget.data.lineTouchData
-            .copyWith(touchCallback: _handleBuiltInTouch),
+        lineTouchData: widget.data.lineTouchData.copyWith(touchCallback: _handleBuiltInTouch),
       );
     }
     return widget.data;
@@ -96,9 +108,7 @@ class _LineChartState extends AnimatedWidgetBaseState<LineChart> {
   ) {
     _providedTouchCallback?.call(event, touchResponse);
 
-    if (!event.isInterestedForInteractions ||
-        touchResponse?.lineBarSpots == null ||
-        touchResponse!.lineBarSpots!.isEmpty) {
+    if (!event.isInterestedForInteractions || touchResponse?.lineBarSpots == null || touchResponse!.lineBarSpots!.isEmpty) {
       setState(() {
         _showingTouchedTooltips.clear();
         _showingTouchedIndicators.clear();
@@ -107,8 +117,7 @@ class _LineChartState extends AnimatedWidgetBaseState<LineChart> {
     }
 
     setState(() {
-      final sortedLineSpots = List.of(touchResponse.lineBarSpots!)
-        ..sort((spot1, spot2) => spot2.y.compareTo(spot1.y));
+      final sortedLineSpots = List.of(touchResponse.lineBarSpots!)..sort((spot1, spot2) => spot2.y.compareTo(spot1.y));
 
       _showingTouchedIndicators.clear();
       for (var i = 0; i < touchResponse.lineBarSpots!.length; i++) {
@@ -128,8 +137,7 @@ class _LineChartState extends AnimatedWidgetBaseState<LineChart> {
     _lineChartDataTween = visitor(
       _lineChartDataTween,
       _getData(),
-      (dynamic value) =>
-          LineChartDataTween(begin: value as LineChartData, end: widget.data),
+      (dynamic value) => LineChartDataTween(begin: value as LineChartData, end: widget.data),
     ) as LineChartDataTween?;
   }
 }
