@@ -1,5 +1,4 @@
 // coverage:ignore-file
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
@@ -270,6 +269,7 @@ class LineChartBarData with EquatableMixin {
     bool? isStepLineChart,
     LineChartStepData? lineChartStepData,
     RopeStyle? ropeStyle,
+    LastValueTracker? lastValueTracker,
   })  : spots = spots ?? const [],
         show = show ?? true,
         color =
@@ -289,7 +289,8 @@ class LineChartBarData with EquatableMixin {
         shadow = shadow ?? const Shadow(color: Colors.transparent),
         isStepLineChart = isStepLineChart ?? false,
         lineChartStepData = lineChartStepData ?? LineChartStepData(),
-        ropeStyle = ropeStyle ?? const RopeStyle() {
+        ropeStyle = ropeStyle ?? const RopeStyle(),
+        lastValueTracker = lastValueTracker ?? const LastValueTracker() {
     FlSpot? mostLeft;
     FlSpot? mostTop;
     FlSpot? mostRight;
@@ -408,7 +409,12 @@ class LineChartBarData with EquatableMixin {
   /// Holds data for representing a Step Line Chart, and works only if [isStepChart] is true.
   final LineChartStepData lineChartStepData;
 
+  /// Sets the style of the rope if using [LinePaintStyle.rope]
   final RopeStyle ropeStyle;
+
+  /// This will paint text on the left of the screen with a grey dotted line tracking
+  /// the last value of the chart
+  final LastValueTracker lastValueTracker;
 
   /// Lerps a [LineChartBarData] based on [t] value, check [Tween.lerp].
   static LineChartBarData lerp(
@@ -441,7 +447,8 @@ class LineChartBarData with EquatableMixin {
       isStepLineChart: b.isStepLineChart,
       lineChartStepData:
       LineChartStepData.lerp(a.lineChartStepData, b.lineChartStepData, t),
-      ropeStyle: RopeStyle.lerp(a.ropeStyle, b.ropeStyle, t),
+      ropeStyle: b.ropeStyle,
+      lastValueTracker: b.lastValueTracker,
     );
   }
 
@@ -468,6 +475,7 @@ class LineChartBarData with EquatableMixin {
     bool? isStepLineChart,
     LineChartStepData? lineChartStepData,
     RopeStyle? ropeStyle,
+    LastValueTracker? lastValueTracker,
   }) {
     return LineChartBarData(
       spots: spots ?? this.spots,
@@ -492,6 +500,7 @@ class LineChartBarData with EquatableMixin {
       isStepLineChart: isStepLineChart ?? this.isStepLineChart,
       lineChartStepData: lineChartStepData ?? this.lineChartStepData,
       ropeStyle: ropeStyle ?? this.ropeStyle,
+      lastValueTracker: lastValueTracker ?? this.lastValueTracker,
     );
   }
 
@@ -518,6 +527,7 @@ class LineChartBarData with EquatableMixin {
         isStepLineChart,
         lineChartStepData,
         ropeStyle,
+        lastValueTracker
       ];
 }
 
@@ -1582,30 +1592,47 @@ class RopeStyle extends Equatable {
     this.colors,
   });
 
+  /// colors used to color the segments in an alternating fashion
   final List<Color>? colors;
 
   @override
   List<Object?> get props => [
     colors,
   ];
+}
 
-  static List<Color>? _lerpColorList(List<Color>? a, List<Color>? b, double t) {
-    if (a == null && b == null) {
-      return null;
-    }
-    a ??= <Color>[];
-    b ??= <Color>[];
-    final int commonLength = math.min(a.length, b.length);
-    return <Color>[
-      for (int i = 0; i < commonLength; i += 1) Color.lerp(a[i], b[i], t)!,
-      for (int i = commonLength; i < a.length; i += 1) Color((a[i].value * (1.0 - t)).floor()),
-      for (int i = commonLength; i < b.length; i += 1) Color((a[i].value * t).floor()),
-    ];
-  }
+class LastValueTracker extends Equatable {
+  const LastValueTracker({
+    this.leading,
+    this.text,
+    this.backgroundColor = Colors.white,
+    this.verticalPadding = 0,
+    this.horizontalPadding = 0,
+  });
 
-  static RopeStyle lerp(RopeStyle a, RopeStyle b, double t) {
-    return RopeStyle(
-      colors: _lerpColorList(a.colors, b.colors, t),
-    );
-  }
+  /// draws to the left of [text] and inside of a circle.
+  /// ideally this is a single unicode character
+  final TextPainter Function(double lastValue)? leading;
+
+  /// the text to display
+  final TextPainter Function(double lastValue)? text;
+
+  /// background color of [leading] and [text]
+  final Color backgroundColor;
+
+  /// vertical padding applied to [text]. this padding is also
+  /// used as the padding all the way around [leading].
+  final double verticalPadding;
+
+  /// horizontal padding applied to [text]
+  final double horizontalPadding;
+
+  @override
+  List<Object?> get props => [
+    leading,
+    text,
+    backgroundColor,
+    verticalPadding,
+    horizontalPadding,
+  ];
 }
