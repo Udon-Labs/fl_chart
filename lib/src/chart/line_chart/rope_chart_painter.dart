@@ -26,11 +26,12 @@ class RopeChartPainter extends LineChartPainter {
         continue;
       }
 
-      drawLastValueTracker(canvasWrapper, barData, holder);
+      drawLastValueTracker(context, canvasWrapper, barData, holder);
     }
   }
 
   void drawLastValueTracker(
+    BuildContext context,
     CanvasWrapper canvasWrapper,
     LineChartBarData barData,
     PaintHolder<LineChartData> holder,
@@ -54,6 +55,9 @@ class RopeChartPainter extends LineChartPainter {
     final halfHorizontalPadding = horizontalPadding / 2;
 
     var drawX = leftX;
+
+    // callback to alert of the bar y value
+    barData.lastValueTrackerUpdate?.call(yValue);
 
     if (leadingPainter != null) {
       leadingPainter.layout();
@@ -106,7 +110,7 @@ class RopeChartPainter extends LineChartPainter {
       drawX = left + width;
     }
 
-    drawDashedLine(canvasWrapper, drawX, rightX, yValue);
+    // drawDashedLine(canvasWrapper, drawX, rightX, yValue);
   }
 
   void drawDashedLine(

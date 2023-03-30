@@ -11,6 +11,8 @@ import 'package:flutter/material.dart' hide Image;
 
 enum LinePaintStyle { line, rope }
 
+typedef LastValueTrackerUpdate = void Function(double yValue);
+
 /// [LineChart] needs this class to render itself.
 ///
 /// It holds data needed to draw a line chart,
@@ -270,6 +272,7 @@ class LineChartBarData with EquatableMixin {
     LineChartStepData? lineChartStepData,
     RopeStyle? ropeStyle,
     LastValueTracker? lastValueTracker,
+    this.lastValueTrackerUpdate,
   })  : spots = spots ?? const [],
         show = show ?? true,
         color =
@@ -416,6 +419,8 @@ class LineChartBarData with EquatableMixin {
   /// the last value of the chart
   final LastValueTracker lastValueTracker;
 
+  final LastValueTrackerUpdate? lastValueTrackerUpdate;
+
   /// Lerps a [LineChartBarData] based on [t] value, check [Tween.lerp].
   static LineChartBarData lerp(
     LineChartBarData a,
@@ -449,6 +454,7 @@ class LineChartBarData with EquatableMixin {
       LineChartStepData.lerp(a.lineChartStepData, b.lineChartStepData, t),
       ropeStyle: b.ropeStyle,
       lastValueTracker: b.lastValueTracker,
+      lastValueTrackerUpdate: b.lastValueTrackerUpdate,
     );
   }
 
@@ -476,6 +482,7 @@ class LineChartBarData with EquatableMixin {
     LineChartStepData? lineChartStepData,
     RopeStyle? ropeStyle,
     LastValueTracker? lastValueTracker,
+    LastValueTrackerUpdate? lastValueTrackerUpdate,
   }) {
     return LineChartBarData(
       spots: spots ?? this.spots,
@@ -501,6 +508,7 @@ class LineChartBarData with EquatableMixin {
       lineChartStepData: lineChartStepData ?? this.lineChartStepData,
       ropeStyle: ropeStyle ?? this.ropeStyle,
       lastValueTracker: lastValueTracker ?? this.lastValueTracker,
+      lastValueTrackerUpdate: lastValueTrackerUpdate ?? this.lastValueTrackerUpdate,
     );
   }
 
@@ -527,7 +535,8 @@ class LineChartBarData with EquatableMixin {
         isStepLineChart,
         lineChartStepData,
         ropeStyle,
-        lastValueTracker
+        lastValueTracker,
+        lastValueTrackerUpdate,
       ];
 }
 
