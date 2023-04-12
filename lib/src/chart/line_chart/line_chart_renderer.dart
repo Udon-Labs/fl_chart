@@ -82,7 +82,6 @@ class RenderLineChart extends RenderBaseChart<LineTouchResponse> {
   @visibleForTesting
   Size? mockTestSize;
 
-  @visibleForTesting
   LineChartPainter painter = LineChartPainter();
 
   PaintHolder<LineChartData> get paintHolder {

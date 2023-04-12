@@ -43,7 +43,6 @@ class RopeChartPainter extends LineChartPainter {
     final lastValue = barData.spots.last.y;
     final viewSize = canvasWrapper.size;
     final leftX = getPixelX(barData.mostLeftSpot.x, viewSize, holder);
-    final rightX = getPixelX(barData.mostRightSpot.x, viewSize, holder);
     final yValue = getPixelY(lastValue, viewSize, holder);
 
     final leadingPainter = barData.lastValueTracker.leading?.call(lastValue);
